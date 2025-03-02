@@ -37,12 +37,9 @@ const hangmanParts = document.querySelectorAll('.hangman-part')
 
 const clickSound = new Audio('./assets/click.mp3')
 const winSound = new Audio('./assets/win.mp3');
-// const themeToggle = document.getElementById('theme-toggle');
+const wrongGuessSound = new Audio('./assets/wrong.mp3');
+const loseSound = new Audio('./assets/loss.mp3'); 
 
-
-// themeToggle.addEventListener('click', () => {
-//     document.body.classList.toggle('dark-mode');
-// });
 
 function gamePlay() {
     guessedLetters = []
@@ -115,16 +112,17 @@ function handleGuess(letter) {
 
     const key = [...keyboard.children].find(key => key.textContent === letter);
 
-    clickSound.play();
     key.classList.add('used')
 
     if(currentWord.includes(letter)) {
+        clickSound.play();
         key.classList.add('correct')
         updateWordDisplay(letter)
         score += 10
 
     } else {
         key.classList.add('wrong')
+        wrongGuessSound.play();
         wrongGuesses++
         triesLeft.textContent = maxTries - wrongGuesses;
         updateHangman()
@@ -134,7 +132,12 @@ function handleGuess(letter) {
 
     if (isWordComplete()) {
         handleWin();
+    } 
+
+    if (wrongGuesses === maxTries) {
+        handleLoss();
     }
+
 }
 
 function updateWordDisplay(letter) {
@@ -161,13 +164,11 @@ function isWordComplete() {
             return false;
         }
     }
-   
     return true;
 }
 
 
 
-// what happens when you win
 function handleWin() {
     score += 50;
     scoreElement.textContent = score;
@@ -179,7 +180,7 @@ function handleWin() {
         <span style="
             color: #32CD32; 
             font-weight: bold; 
-            font-size: 36px;
+            font-size: 2.25rem;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);">🎉 You Won! 🎉</span>
         <b>You scored ${score} points!</b>
         <p>New game starts in <span id="countdown">${countdown}</span>s</p>
@@ -199,6 +200,46 @@ function handleWin() {
         }
     }, 1000);
 }
+
+
+function handleLoss() {
+    messageElement.className = 'message'; 
+    let countdown = 10;
+
+    messageElement.innerHTML = `
+        <span style="
+            color: #FF4C4C; 
+            font-size: 1.5rem; 
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        ">😞 You Lost! 😞</span>
+        <b style="
+            display: block; 
+            font-size: 1.25rem; 
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+        ">The word was: <span style="color: #FFD700;">${currentWord.toUpperCase()}</span></b>
+        <b>You scored ${score} points!</b>
+        <p style="
+            font-size: 1.125rem; 
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        ">New game starts in <span id="countdown">${countdown}</span>s</p>
+    `;
+
+    // Disable keyboard
+    [...keyboard.children].forEach(key => key.disabled = true);
+    
+    loseSound.play();
+
+    const timer = setInterval(() => {
+        countdown--;
+        document.getElementById('countdown').textContent = countdown;
+
+        if (countdown <= 0) {
+            clearInterval(timer);
+            gamePlay();
+        }
+    }, 1000);
+}
+
 
 
 
