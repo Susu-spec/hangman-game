@@ -103,6 +103,8 @@ function resetHangman() {
             part.style.display = 'none'
         }
     })
+    messageElement.classList.remove('message');
+    messageElement.textContent = '';
 }
 
 
